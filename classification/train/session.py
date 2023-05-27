@@ -68,7 +68,7 @@ class TensorboardLogger(BaseLogger):
 
 
 class CkptLogger(BaseLogger):
-    def __init__(self, workdir: str, key_metric: str = 'acc_top1', **kwargs):
+    def __init__(self, workdir: str, key_metric: str = 'accuracy', **kwargs):
         BaseLogger.__init__(self, workdir, **kwargs)
         self.key_metric = key_metric
 

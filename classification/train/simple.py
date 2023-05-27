@@ -5,7 +5,7 @@ from typing import Optional, List
 import torch
 from accelerate import Accelerator
 from hbutils.random import global_seed
-from sklearn.metrics import top_k_accuracy_score
+from sklearn.metrics import accuracy_score
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
@@ -96,13 +96,11 @@ def train_simple(
 
         train_y_true = torch.concat(train_y_true).detach().cpu().numpy()
         train_y_pred = torch.concat(train_y_pred).detach().cpu().numpy()
-        train_y_score = torch.concat(train_y_score).detach().cpu().numpy()
         session.tb_train_log(
             global_step=epoch,
             metrics={
                 'loss': train_loss / train_total,
-                'acc_top1': top_k_accuracy_score(train_y_true, train_y_score, k=1, labels=labels),
-                'acc_top5': top_k_accuracy_score(train_y_true, train_y_score, k=5, labels=labels),
+                'accuracy': accuracy_score(train_y_true, train_y_pred),
                 'confusion': plt_export(
                     plt_confusion_matrix,
                     train_y_true, train_y_pred, labels,
@@ -138,8 +136,7 @@ def train_simple(
                     model=model,
                     metrics={
                         'loss': test_loss / test_total,
-                        'acc_top1': top_k_accuracy_score(test_y_true, test_y_score, k=1, labels=labels),
-                        'acc_top5': top_k_accuracy_score(test_y_true, test_y_score, k=5, labels=labels),
+                        'accuracy': accuracy_score(test_y_true, test_y_pred),
                         'confusion': plt_export(
                             plt_confusion_matrix,
                             test_y_true, test_y_pred, labels,
