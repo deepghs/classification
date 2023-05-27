@@ -94,9 +94,9 @@ def train_simple(
             train_loss += loss.item() * inputs.size(0)
             scheduler.step()
 
-        train_y_true = torch.concat(train_y_true).cpu().numpy()
-        train_y_pred = torch.concat(train_y_pred).cpu().numpy()
-        train_y_score = torch.concat(train_y_score).cpu().numpy()
+        train_y_true = torch.concat(train_y_true).cpu().detach().numpy()
+        train_y_pred = torch.concat(train_y_pred).cpu().detach().numpy()
+        train_y_score = torch.concat(train_y_score).cpu().detach().numpy()
         session.tb_train_log(
             global_step=epoch,
             metrics={
