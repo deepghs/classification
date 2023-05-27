@@ -94,6 +94,9 @@ class CkptLogger(BaseLogger):
 
     def _save_last(self, global_step, model, metrics: Mapping[str, Union[float, Image.Image]]):
         model.__info__ = {**metrics, 'step': global_step}
+        dir_ = os.path.dirname(self._last_ckpt)
+        if dir_:
+            os.makedirs(dir_, exist_ok=True)
         save_model_to_ckpt(model, self._last_ckpt)
         self._last_step = global_step
         logging.info(f'Last ckpt model epoch {global_step} saved')
@@ -117,6 +120,9 @@ class CkptLogger(BaseLogger):
     def _save_best(self, global_step, model, metrics: Mapping[str, Union[float, Image.Image]]):
         model.__info__ = {**metrics, 'step': global_step}
         if self._best_metric_value is None or model.__info__[self.key_metric] > self._best_metric_value:
+            dir_ = os.path.dirname(self._best_ckpt)
+            if dir_:
+                os.makedirs(dir_, exist_ok=True)
             save_model_to_ckpt(model, self._best_ckpt)
             self._best_metric_value = model.__info__[self.key_metric]
             logging.info(f'Best ckpt model epoch {global_step} saved, '
