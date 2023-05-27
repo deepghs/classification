@@ -75,28 +75,28 @@ def train_simple(
         train_loss = 0.0
         train_total = 0
         train_y_true, train_y_pred, train_y_score = [], [], []
-        for i, (inputs, labels) in enumerate(tqdm(train_dataloader)):
+        for i, (inputs, labels_) in enumerate(tqdm(train_dataloader)):
             inputs = inputs.float()
             inputs = inputs.to(accelerator.device)
-            labels = labels.to(accelerator.device)
+            labels_ = labels_.to(accelerator.device)
 
             optimizer.zero_grad()
             outputs = model(inputs)
-            train_y_true.append(labels)
+            train_y_true.append(labels_)
             train_y_pred.append(outputs.argmax(dim=1))
             train_y_score.append(torch.softmax(outputs, dim=1))
-            train_total += labels.shape[0]
+            train_total += labels_.shape[0]
 
-            loss = loss_fn(outputs, labels)
+            loss = loss_fn(outputs, labels_)
             # loss.backward()
             accelerator.backward(loss)
             optimizer.step()
             train_loss += loss.item() * inputs.size(0)
             scheduler.step()
 
-        train_y_true = torch.concat(train_y_true).cpu().detach().numpy()
-        train_y_pred = torch.concat(train_y_pred).cpu().detach().numpy()
-        train_y_score = torch.concat(train_y_score).cpu().detach().numpy()
+        train_y_true = torch.concat(train_y_true).detach().cpu().numpy()
+        train_y_pred = torch.concat(train_y_pred).detach().cpu().numpy()
+        train_y_score = torch.concat(train_y_score).detach().cpu().numpy()
         session.tb_train_log(
             global_step=epoch,
             metrics={
@@ -117,17 +117,17 @@ def train_simple(
                 test_loss = 0.0
                 test_total = 0
                 test_y_true, test_y_pred, test_y_score = [], [], []
-                for i, (inputs, labels) in enumerate(tqdm(test_dataloader)):
+                for i, (inputs, labels_) in enumerate(tqdm(test_dataloader)):
                     inputs = inputs.float().to(accelerator.device)
-                    labels = labels.to(accelerator.device)
+                    labels_ = labels_.to(accelerator.device)
 
                     outputs = model(inputs)
-                    test_y_true.append(labels)
+                    test_y_true.append(labels_)
                     test_y_pred.append(outputs.argmax(dim=1))
                     test_y_score.append(torch.softmax(outputs, dim=1))
-                    test_total += labels.shape[0]
+                    test_total += labels_.shape[0]
 
-                    loss = loss_fn(outputs, labels)
+                    loss = loss_fn(outputs, labels_)
                     test_loss += loss.item() * inputs.size(0)
 
                 test_y_true = torch.concat(test_y_true).cpu().numpy()
