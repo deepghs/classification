@@ -101,8 +101,8 @@ def train_simple(
             global_step=epoch,
             metrics={
                 'loss': train_loss / train_total,
-                'acc_top1': top_k_accuracy_score(train_y_true, train_y_score, k=1),
-                'acc_top5': top_k_accuracy_score(train_y_true, train_y_score, k=5),
+                'acc_top1': top_k_accuracy_score(train_y_true, train_y_score, k=1, labels=labels),
+                'acc_top5': top_k_accuracy_score(train_y_true, train_y_score, k=5, labels=labels),
                 'confusion': plt_export(
                     plt_confusion_matrix,
                     train_y_true, train_y_pred, labels,
@@ -138,8 +138,8 @@ def train_simple(
                     model=model,
                     metrics={
                         'loss': test_loss / test_total,
-                        'acc_top1': top_k_accuracy_score(test_y_true, test_y_score, k=1),
-                        'acc_top5': top_k_accuracy_score(test_y_true, test_y_score, k=5),
+                        'acc_top1': top_k_accuracy_score(test_y_true, test_y_score, k=1, labels=labels),
+                        'acc_top5': top_k_accuracy_score(test_y_true, test_y_score, k=5, labels=labels),
                         'confusion': plt_export(
                             plt_confusion_matrix,
                             test_y_true, test_y_pred, labels,
