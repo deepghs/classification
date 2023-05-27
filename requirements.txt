@@ -1,0 +1,18 @@
+hbutils>=0.9.1
+torch<2
+torchvision
+matplotlib
+pillow
+numpy
+scikit-learn
+huggingface_hub
+tqdm
+opencv-python
+pandas
+timm>=0.9.0
+thop
+typing_extensions; python_version < '3.8'
+dghs-imgutils>=0.1.0
+tensorboard
+accelerate
+DI-toolkit
