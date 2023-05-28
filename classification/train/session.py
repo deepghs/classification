@@ -33,6 +33,8 @@ class TensorboardLogger(BaseLogger):
         for key, value in data.items():
             if isinstance(value, (int, float)) or \
                     (isinstance(value, (torch.Tensor, np.ndarray)) and not value.shape):
+                if isinstance(value, (torch.Tensor, np.ndarray)):
+                    value = value.tolist()
                 self.tb_writer.add_scalar(key, value, global_step)
                 logging_metrics[key] = value
             elif isinstance(value, (torch.Tensor, np.ndarray)):
