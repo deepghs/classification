@@ -4,6 +4,7 @@ from typing import Optional, List
 
 import torch
 from accelerate import Accelerator
+from ditk import logging
 from hbutils.random import global_seed
 from sklearn.metrics import accuracy_score
 from torch.optim import lr_scheduler
@@ -11,6 +12,7 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 
 from .metrics import cls_map_score
+from .profile import torch_model_profile
 from .session import _load_last_ckpt, TrainSession
 from ..losses import FocalLoss
 from ..models import get_backbone_model
@@ -27,6 +29,7 @@ def train_simple(
         # native random, numpy, torch and faker's seeds are includes
         # if you need to register more library for seeding, see:
         # https://hansbug.github.io/hbutils/main/api_doc/random/state.html#register-random-source
+        logging.info(f'Globally set the random seed {seed!r}.')
         global_seed(seed)
 
     os.makedirs(workdir, exist_ok=True)
@@ -37,6 +40,7 @@ def train_simple(
 
     model, _model_name, _labels, _model_args = _load_last_ckpt(workdir)
     if model:
+        logging.info(f'Load previous ckpt from work directory {workdir!r}.')
         assert _model_name == model_name, \
             f'Resumed model name {_model_args!r} not match with specified name {model_name!r}.'
         assert _labels == labels, \
@@ -45,9 +49,14 @@ def train_simple(
             warnings.warn(f'Resumed model arguments {_model_args!r} '
                           f'not match with specified arguments {model_args!r}.')
         previous_epoch = model.__info__['step']
+        logging.info(f'Previous step is {previous_epoch!r}')
     else:
+        logging.info(f'No previous ckpt found, load new model {model!r} with {model_args!r}.')
         model = get_backbone_model(model_name, labels, **model_args)
         previous_epoch = 0
+
+    sample_input, _ = test_dataset[0]
+    torch_model_profile(model, sample_input.unsqueeze(0))  # profile the model
 
     num_workers = num_workers or min(os.cpu_count(), batch_size)
     train_dataloader = DataLoader(
@@ -71,6 +80,7 @@ def train_simple(
         accelerator.prepare(model, optimizer, train_dataloader, test_dataloader, scheduler)
 
     session = TrainSession(workdir)
+    logging.info('Training start!')
     for epoch in range(previous_epoch + 1, max_epochs + 1):
         model.train()
         train_loss = 0.0

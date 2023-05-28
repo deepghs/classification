@@ -7,6 +7,7 @@ from torch import nn
 
 from .onnx import onnx_quick_export
 from ..models import load_model_from_ckpt
+from ..train import torch_model_profile
 
 
 class ModelWithSoftMax(nn.Module):
@@ -41,16 +42,6 @@ def export_model_to_onnx(model, onnx_filename, opset_version: int = 14, verbose:
         },
         no_gpu=True,
     )
-
-
-def torch_model_profile(model, input_):
-    from thop import profile
-
-    with torch.no_grad():
-        flops, params = profile(model, (input_,))
-
-    logging.info(f'FLOPs: {flops / 1e9:.2f}G')
-    logging.info(f'Params: {params / 1e6:.2f}M')
 
 
 def export_onnx_from_ckpt(model_filename, onnx_filename, opset_version: int = 14, verbose: bool = True,
