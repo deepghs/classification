@@ -40,7 +40,6 @@ class TensorboardLogger(BaseLogger):
             elif isinstance(value, (Image.Image,)):
                 # noinspection PyTypeChecker
                 img_array = np.asarray(value.convert('RGB')).transpose((2, 0, 1))
-                print(img_array.shape)
                 self.tb_writer.add_image(key, img_array, global_step, dataformats='CHW')
             else:
                 raise TypeError(f'Unknown data type for {key!r}: {value!r}')
