@@ -25,6 +25,8 @@ def export_model_to_onnx(model, onnx_filename, opset_version: int = 14, verbose:
     logging.info('Preparing input and model ...')
     example_input = torch.randn(1, 3, imgsize, imgsize).float()
     model = ModelWithSoftMax(model.cpu()).float()
+    model.eval()
+    torch_model_profile(model, example_input)
 
     logging.info(f'Start exporting to {onnx_filename!r}')
     onnx_quick_export(
@@ -39,6 +41,16 @@ def export_model_to_onnx(model, onnx_filename, opset_version: int = 14, verbose:
         },
         no_gpu=True,
     )
+
+
+def torch_model_profile(model, input_):
+    from thop import profile
+
+    with torch.no_grad():
+        flops, params = profile(model, (input_,))
+
+    logging.info(f'FLOPs: {flops / 1e9:.2f}G')
+    logging.info(f'Params: {params / 1e6:.2f}M')
 
 
 def export_onnx_from_ckpt(model_filename, onnx_filename, opset_version: int = 14, verbose: bool = True,

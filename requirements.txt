@@ -16,4 +16,5 @@ dghs-imgutils>=0.1.0
 tensorboard
 accelerate
 DI-toolkit
+thop
 click>=7
