@@ -16,4 +16,5 @@ def plt_confusion_matrix(ax, y_true, y_pred, labels, title: str = 'Confusion Mat
         display_labels=labels,
     )
     disp.plot(ax=ax, cmap=cmap or plt.cm.Blues)
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=90)
     ax.set_title(title)

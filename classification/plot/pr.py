@@ -4,7 +4,7 @@ from scipy import integrate
 from sklearn.metrics import f1_score, precision_score, recall_score, precision_recall_curve, PrecisionRecallDisplay
 
 
-def _nm_check(y_true, y_scores, labels):
+def nm_check(y_true, y_scores, labels):
     assert len(y_true.shape) == 1, \
         f'y_true should be 1-dim, but {y_true.shape!r} found.'
     N = y_true.shape[0]
@@ -17,7 +17,7 @@ def _nm_check(y_true, y_scores, labels):
 
 @keep_global_state()
 def _create_score_curve(ax, name, func, y_true, y_scores, labels, title=None, units: int = 500):
-    N, M = _nm_check(y_true, y_scores, labels)
+    N, M = nm_check(y_true, y_scores, labels)
     for mi in range(M):
         xs, ys = [], []
         scores = np.sort(y_scores[:, mi], kind='heapsort')
@@ -58,7 +58,7 @@ def plt_r_curve(ax, y_true, y_scores, labels, title='Recall Curve', units: int =
 
 
 def plt_pr_curve(ax, y_true, y_scores, labels, title='PR Curve'):
-    N, M = _nm_check(y_true, y_scores, labels)
+    N, M = nm_check(y_true, y_scores, labels)
     for mi in range(M):
         _y_true = y_true == mi
         _y_score = y_scores[:, mi]

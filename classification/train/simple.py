@@ -10,6 +10,7 @@ from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 
+from .metrics import cls_map_score
 from .session import _load_last_ckpt, TrainSession
 from ..losses import FocalLoss
 from ..models import get_backbone_model
@@ -137,6 +138,7 @@ def train_simple(
                     metrics={
                         'loss': test_loss / test_total,
                         'accuracy': accuracy_score(test_y_true, test_y_pred),
+                        'mAP': cls_map_score(test_y_true, test_y_score, labels),
                         'confusion': plt_export(
                             plt_confusion_matrix,
                             test_y_true, test_y_pred, labels,
