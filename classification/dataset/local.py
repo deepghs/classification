@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 
 
 class LocalImageDataset(Dataset):
-    def __init__(self, image_dir, labels, transform=None):
+    def __init__(self, image_dir, labels, transform=None, no_cache: bool = False):
         self.labels = labels
         self._label_map = {l: i for i, l in enumerate(labels)}
 
@@ -18,14 +18,22 @@ class LocalImageDataset(Dataset):
         self.transform = transform
 
         self._cached_images = {}
+        self._no_cache = no_cache
+
+    def _raw_load_image(self, index):
+        image_file, lid = self.images[index]
+        image = load_image(image_file, force_background='white', mode='RGB')
+        return image, lid
 
     def _getitem(self, index):
-        if index not in self._cached_images:
-            image_file, lid = self.images[index]
-            image = load_image(image_file, force_background='white', mode='RGB')
-            self._cached_images[index] = (image, lid)
+        if self._no_cache:
+            image, lid = self._raw_load_image(index)
         else:
-            image, lid = self._cached_images[index]
+            if index not in self._cached_images:
+                image, lid = self._raw_load_image(index)
+                self._cached_images[index] = (image, lid)
+            else:
+                image, lid = self._cached_images[index]
 
         return image, lid
 
