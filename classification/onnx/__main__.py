@@ -1,3 +1,4 @@
+import os.path
 from functools import partial
 
 import click
@@ -31,6 +32,23 @@ def cli():
               help='Output file of onnx model', show_default=True)
 def export(model_filename: str, imgsize: int, non_dynamic: bool, verbose: bool, onnx_filename):
     logging.try_init_root(logging.INFO)
+    export_onnx_from_ckpt(model_filename, onnx_filename, 14, verbose, imgsize, not non_dynamic)
+    validate_onnx_model(onnx_filename)
+
+
+@cli.command('dump', help='Dump onnx model from existing work directory.')
+@click.option('--workdir', '-w', 'workdir', type=click.Path(file_okay=False, exists=True), required=True,
+              help='Work directory of the training.', show_default=True)
+@click.option('--imgsize', '-s', 'imgsize', type=int, default=384,
+              help='Image size for input.', show_default=True)
+@click.option('--non-dynamic', '-D', 'non_dynamic', is_flag=True, type=bool, default=False,
+              help='Do not export model with dynamic input height and width.', show_default=True)
+@click.option('--verbose', '-V', 'verbose', is_flag=True, type=bool, default=False,
+              help='Show verbose information.', show_default=True)
+def dump(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool):
+    logging.try_init_root(logging.INFO)
+    model_filename = os.path.join(workdir, 'ckpts', 'best.ckpt')
+    onnx_filename = os.path.join(workdir, 'onnxs', 'best.onnx')
     export_onnx_from_ckpt(model_filename, onnx_filename, 14, verbose, imgsize, not non_dynamic)
     validate_onnx_model(onnx_filename)
 
