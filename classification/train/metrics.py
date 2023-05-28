@@ -14,4 +14,4 @@ def cls_map_score(y_true, y_scores, labels):
         precision, recall, _ = precision_recall_curve(_y_true, _y_score)
         values.append(-integrate.simpson(precision, recall))
 
-    return np.concatenate(values).mean()
+    return np.array(values).mean()
