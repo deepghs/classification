@@ -51,7 +51,7 @@ def train_simple(
         previous_epoch = model.__info__['step']
         logging.info(f'Previous step is {previous_epoch!r}')
     else:
-        logging.info(f'No previous ckpt found, load new model {model!r} with {model_args!r}.')
+        logging.info(f'No previous ckpt found, load new model {model_name!r} with {model_args!r}.')
         model = get_backbone_model(model_name, labels, **model_args)
         previous_epoch = 0
 

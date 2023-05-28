@@ -25,7 +25,9 @@ def load_model_from_ckpt(file):
     name = arguments.pop('name')
     labels = arguments.pop('labels')
     model = get_backbone_model(name, labels, **arguments)
-    model.load_state_dict(data['state_dict'])
+    existing_keys = set(model.state_dict())
+    state_dict = {key: value for key, value in data['state_dict'].items() if key in existing_keys}
+    model.load_state_dict(state_dict)
     model.__info__ = data['info']
 
     return model
