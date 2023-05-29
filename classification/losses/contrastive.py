@@ -16,13 +16,11 @@ class ContrastiveLoss(nn.Module):
         assert len(labels.shape) == 1 and len(logits.shape) == 2 and logits.shape[0] == labels.shape[0], \
             f'Expected to be logit(BxC) and labels(B), but logit({logits.shape}) and labels({logits.shape}) found.'
 
-        batch = logits.shape[-2]
+        batch = labels.shape[0]
         idx = torch.arange(batch)
-        valid = torch.zeros((*logits.shape[:-1], logits.shape[-2]), dtype=torch.bool)
-        valid[..., :, :] = idx.unsqueeze(-1) != idx.unsqueeze(-2)
-        valid = valid.to(self.margin.device)
+        valid = (idx != idx.unsqueeze(-1)).to(self.margin.device)
 
-        _same = labels.unsqueeze(-1) == labels.unsqueeze(-2)
+        _same = labels == labels.unsqueeze(-1)
         same_mask = (_same & valid).type(logits.dtype)
         not_same_mask = (~_same & valid).type(logits.dtype)
 
