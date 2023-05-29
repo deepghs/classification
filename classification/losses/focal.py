@@ -18,12 +18,12 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
         self.reduction = reduction
 
-    def forward(self, input_tensor, target_tensor):
-        log_prob = F.log_softmax(input_tensor, dim=-1)
+    def forward(self, logits, labels):
+        log_prob = F.log_softmax(logits, dim=-1)
         prob = torch.exp(log_prob)
         return F.nll_loss(
             ((1 - prob) ** self.gamma) * log_prob,
-            target_tensor,
+            labels,
             weight=self.weight,
             reduction=self.reduction
         )
