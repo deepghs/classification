@@ -30,9 +30,9 @@ WEIGHTS = [math.e ** 2, 1.0]  # weight of each class
 #     └── image6.jpg
 DATASET_DIR = '/my/dataset/directory'
 
-# data argument and preprocessing for train dataset
+# data augment and preprocessing for train dataset
 TRANSFORM_TRAIN = transforms.Compose([
-    # data argumentation
+    # data augmentation
     transforms.Resize(450),
     transforms.RandomCrop(400, padding=50, pad_if_needed=True, padding_mode='reflect'),
     transforms.RandomRotation((-180, 180)),
@@ -84,13 +84,61 @@ if __name__ == '__main__':
         max_epochs=500,
         num_workers=8,
         eval_epoch=5,
+        seed=0,
 
         # hyper-parameters
         batch_size=16,
-        learning_rate=0.001,
+        learning_rate=1e-3,  # 1.5e-4 recommended for vit networks
         weight_decay=1e-3,
-
-        # seed
-        seed=0
     )
+```
+
+## Export onnx model
+
+### From checkpoint
+
+Attention that this export is only supported for ckpt dumped with `classficiation` module, for it contains extra
+information except state dict of the network.
+
+```shell
+python -m classification.onnx export --help
+```
+
+```text
+Usage: python -m classification.onnx export [OPTIONS]
+
+  Export existing checkpoint to onnx
+
+Options:
+  -i, --input FILE       Input checkpoint to export.  [required]
+  -s, --imgsize INTEGER  Image size for input.  [default: 384]
+  -D, --non-dynamic      Do not export model with dynamic input height and
+                         width.
+  -V, --verbose          Show verbose information.
+  -o, --output FILE      Output file of onnx model
+  -h, --help             Show this message and exit.
+```
+
+## From training work directory
+
+```shell
+python -m classification.onnx dump -w runs/demo_exp
+```
+
+Then the `runs/demo_exp/ckpts/best.ckpt` will be dumped to `runs/demo_exp/onnxs/best.onnx`
+
+Here is the help information
+
+```text
+Usage: python -m classification.onnx dump [OPTIONS]
+
+  Dump onnx model from existing work directory.
+
+Options:
+  -w, --workdir DIRECTORY  Work directory of the training.  [required]
+  -s, --imgsize INTEGER    Image size for input.  [default: 384]
+  -D, --non-dynamic        Do not export model with dynamic input height and
+                           width.
+  -V, --verbose            Show verbose information.
+  -h, --help               Show this message and exit.
 ```
