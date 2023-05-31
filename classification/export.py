@@ -40,7 +40,6 @@ def cli(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, name: Opti
     model = load_model_from_ckpt(model_filename)
     _info = model.__info__
 
-    step = _info['step']
     metrics = {}
     plots = {}
     for key, value in _info.items():
@@ -58,21 +57,21 @@ def cli(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, name: Opti
     export_dir = os.path.join(workdir, 'export')
     os.makedirs(export_dir, exist_ok=True)
 
-    ckpt_file = os.path.join(export_dir, f'{name}_epoch_{step}.ckpt')
+    ckpt_file = os.path.join(export_dir, f'{name}.ckpt')
     logging.info(f'Copying checkpoint to {ckpt_file!r}')
     shutil.copyfile(model_filename, ckpt_file)
 
-    metrics_file = os.path.join(export_dir, f'{name}_epoch_{step}_metrics.json')
+    metrics_file = os.path.join(export_dir, f'{name}_metrics.json')
     logging.info(f'Recording metrics to {metrics_file!r}')
     with open(metrics_file, 'w') as f:
         json.dump(metrics, f, sort_keys=True, indent=4, ensure_ascii=False)
 
     for key, value in plots.items():
-        plt_file = os.path.join(export_dir, f'{name}_epoch_{step}_plot_{key}.png')
+        plt_file = os.path.join(export_dir, f'{name}_plot_{key}.png')
         logging.info(f'Save plot figure {key} to {plt_file!r}')
         value.save(plt_file)
 
-    onnx_file = os.path.join(export_dir, f'{name}_epoch_{step}.onnx')
+    onnx_file = os.path.join(export_dir, f'{name}.onnx')
     export_onnx_from_ckpt(model_filename, onnx_file, 14, verbose, imgsize, not non_dynamic)
     validate_onnx_model(onnx_file)
 
