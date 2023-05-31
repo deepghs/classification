@@ -11,12 +11,12 @@ from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 
-from .metrics import cls_map_score
+from .metrics import cls_map_score, cls_auc_score
 from .profile import torch_model_profile
 from .session import _load_last_ckpt, TrainSession
 from ..losses import FocalLoss
 from ..models import get_backbone_model
-from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, plt_r_curve, plt_f1_curve
+from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, plt_r_curve, plt_f1_curve, plt_roc_curve
 
 
 def train_simple(
@@ -149,6 +149,7 @@ def train_simple(
                         'loss': test_loss / test_total,
                         'accuracy': accuracy_score(test_y_true, test_y_pred),
                         'mAP': cls_map_score(test_y_true, test_y_score, labels),
+                        'AUC': cls_auc_score(test_y_true, test_y_score, labels),
                         'confusion': plt_export(
                             plt_confusion_matrix,
                             test_y_true, test_y_pred, labels,
@@ -170,5 +171,9 @@ def train_simple(
                             plt_f1_curve, test_y_true, test_y_score, labels,
                             title=f'F1 Curve Epoch {epoch}',
                         ),
+                        'roc_curve': plt_export(
+                            plt_roc_curve, test_y_true, test_y_score, labels,
+                            title=f'ROC Curve Epoch {epoch}',
+                        )
                     }
                 )
