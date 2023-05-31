@@ -2,6 +2,11 @@ import os
 import warnings
 from typing import Optional, List
 
+try:
+    from typing import Literal
+except (ModuleNotFoundError, ImportError):
+    from typing_extensions import Literal
+
 import torch
 from accelerate import Accelerator
 from ditk import logging
@@ -24,6 +29,7 @@ def train_simple(
         train_dataset: Dataset, test_dataset: Dataset,
         batch_size: int = 16, max_epochs: int = 500, learning_rate: float = 0.001,
         weight_decay: float = 1e-3, num_workers: Optional[int] = 8, eval_epoch: int = 5,
+        key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy',
         loss_weight=None, seed: Optional[int] = 0, **model_args):
     if seed is not None:
         # native random, numpy, torch and faker's seeds are includes
@@ -79,7 +85,7 @@ def train_simple(
     model, optimizer, train_dataloader, test_dataloader, scheduler = \
         accelerator.prepare(model, optimizer, train_dataloader, test_dataloader, scheduler)
 
-    session = TrainSession(workdir)
+    session = TrainSession(workdir, key_metric=key_metric)
     logging.info('Training start!')
     for epoch in range(previous_epoch + 1, max_epochs + 1):
         model.train()

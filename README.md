@@ -84,6 +84,7 @@ if __name__ == '__main__':
         max_epochs=500,
         num_workers=8,
         eval_epoch=5,
+        key_metric='accuracy',
         seed=0,
 
         # hyper-parameters
