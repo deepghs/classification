@@ -113,11 +113,14 @@ def train_simple(
 
         train_y_true = torch.concat(train_y_true).detach().cpu().numpy()
         train_y_pred = torch.concat(train_y_pred).detach().cpu().numpy()
+        train_y_score = torch.concat(train_y_score).detach().cpu().numpy()
         session.tb_train_log(
             global_step=epoch,
             metrics={
                 'loss': train_loss / train_total,
                 'accuracy': accuracy_score(train_y_true, train_y_pred),
+                'mAP': cls_map_score(train_y_true, train_y_score, labels),
+                'AUC': cls_auc_score(train_y_true, train_y_score, labels),
                 'confusion': plt_export(
                     plt_confusion_matrix,
                     train_y_true, train_y_pred, labels,
