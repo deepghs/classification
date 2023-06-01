@@ -1,7 +1,8 @@
 import torch
 from torch import nn
-
 from torch.nn import functional as F
+
+from .base import register_loss
 
 
 class FocalLoss(nn.Module):
@@ -9,8 +10,9 @@ class FocalLoss(nn.Module):
     Based on https://discuss.pytorch.org/t/is-this-a-correct-implementation-for-focal-loss-in-pytorch/43327/8
     """
 
-    def __init__(self, weight=None, gamma=2., reduction='mean'):
+    def __init__(self, num_classes, gamma=2., reduction='mean', weight=None):
         nn.Module.__init__(self)
+        self.num_classes = num_classes
         weight = torch.as_tensor(weight).float() if weight is not None else weight
         self.register_buffer('weight', weight)
         self.weight: torch.Tensor
@@ -27,3 +29,6 @@ class FocalLoss(nn.Module):
             weight=self.weight,
             reduction=self.reduction
         )
+
+
+register_loss('focal', FocalLoss)

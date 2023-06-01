@@ -19,7 +19,7 @@ from tqdm.auto import tqdm
 from .metrics import cls_map_score, cls_auc_score
 from .profile import torch_model_profile
 from .session import _load_last_ckpt, TrainSession
-from ..losses import FocalLoss
+from ..losses import get_loss_fn
 from ..models import get_backbone_model
 from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, plt_r_curve, plt_f1_curve, plt_roc_curve
 
@@ -29,7 +29,7 @@ def train_simple(
         train_dataset: Dataset, test_dataset: Dataset,
         batch_size: int = 16, max_epochs: int = 500, learning_rate: float = 0.001,
         weight_decay: float = 1e-3, num_workers: Optional[int] = 8, eval_epoch: int = 5,
-        key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy',
+        key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy', loss='focal',
         loss_weight=None, seed: Optional[int] = 0, **model_args):
     if seed is not None:
         # native random, numpy, torch and faker's seeds are includes
@@ -73,7 +73,7 @@ def train_simple(
 
     if loss_weight is None:
         loss_weight = torch.ones(len(labels), dtype=torch.float)
-    loss_fn = FocalLoss(weight=loss_weight).to(accelerator.device)
+    loss_fn = get_loss_fn(loss, len(labels), loss_weight, reduction='mean')
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     scheduler = lr_scheduler.OneCycleLR(
         optimizer, max_lr=learning_rate,
