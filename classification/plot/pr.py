@@ -1,6 +1,5 @@
 import numpy as np
 from hbutils.random import keep_global_state
-from scipy import integrate
 from sklearn.metrics import f1_score, precision_score, recall_score, precision_recall_curve, PrecisionRecallDisplay
 
 
@@ -64,7 +63,7 @@ def plt_pr_curve(ax, y_true, y_scores, labels, title='PR Curve'):
         _y_score = y_scores[:, mi]
         precision, recall, _ = precision_recall_curve(_y_true, _y_score)
         disp = PrecisionRecallDisplay(precision=precision, recall=recall)
-        _map = -integrate.simpson(precision, recall)
+        _map = -np.trapz(precision, recall)
         disp.plot(ax=ax, name=f'{labels[mi]} (mAP {_map:.3f})')
 
     ax.set_title(title)

@@ -1,5 +1,4 @@
 import numpy as np
-from scipy import integrate
 from sklearn.metrics import precision_recall_curve, roc_curve, auc
 
 from classification.plot.pr import nm_check
@@ -12,7 +11,7 @@ def cls_map_score(y_true, y_scores, labels):
         _y_true = y_true == mi
         _y_score = y_scores[:, mi]
         precision, recall, _ = precision_recall_curve(_y_true, _y_score)
-        values.append(-integrate.simpson(precision, recall))
+        values.append(-np.trapz(precision, recall))
 
     return np.array(values).mean()
 
