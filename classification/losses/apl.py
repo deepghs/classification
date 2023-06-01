@@ -25,7 +25,7 @@ class WeightAttachment(torch.nn.Module):
         self.weights: Optional[torch.Tensor]
 
     def forward(self, loss, labels):
-        return loss * self.weights[labels]
+        return loss * self.weights[labels].to(loss.device)
 
 
 class LossReduction(torch.nn.Module):
