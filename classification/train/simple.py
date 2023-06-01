@@ -82,8 +82,8 @@ def train_simple(
     )
 
     # noinspection PyTypeChecker
-    model, optimizer, train_dataloader, test_dataloader, scheduler = \
-        accelerator.prepare(model, optimizer, train_dataloader, test_dataloader, scheduler)
+    model, optimizer, train_dataloader, test_dataloader, scheduler, loss_fn = \
+        accelerator.prepare(model, optimizer, train_dataloader, test_dataloader, scheduler, loss_fn)
 
     session = TrainSession(workdir, key_metric=key_metric)
     logging.info('Training start!')
