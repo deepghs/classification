@@ -63,30 +63,30 @@ def cli(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, name: Opti
     ckpt_file = os.path.join(export_dir, f'{name}.ckpt')
     logging.info(f'Copying checkpoint to {ckpt_file!r}')
     shutil.copyfile(model_filename, ckpt_file)
-    files.append(ckpt_file)
+    files.append((ckpt_file, 'model.ckpt'))
 
     metrics_file = os.path.join(export_dir, f'{name}_metrics.json')
     logging.info(f'Recording metrics to {metrics_file!r}')
     with open(metrics_file, 'w') as f:
         json.dump(metrics, f, sort_keys=True, indent=4, ensure_ascii=False)
-    files.append(metrics_file)
+    files.append((metrics_file, 'metrics.json'))
 
     for key, value in plots.items():
         plt_file = os.path.join(export_dir, f'{name}_plot_{key}.png')
         logging.info(f'Save plot figure {key} to {plt_file!r}')
         value.save(plt_file)
-        files.append(plt_file)
+        files.append((plt_file, f'plot_{key}.png'))
 
     onnx_file = os.path.join(export_dir, f'{name}.onnx')
     export_onnx_from_ckpt(model_filename, onnx_file, 14, verbose, imgsize, not non_dynamic)
     validate_onnx_model(onnx_file)
-    files.append(onnx_file)
+    files.append((onnx_file, 'model.onnx'))
 
     zip_file = os.path.join(export_dir, f'{name}.zip')
     logging.info(f'Packing all the above file to archive {zip_file!r}')
     with zipfile.ZipFile(zip_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for file in files:
-            zf.write(file, os.path.basename(file))
+        for file, inner_name in files:
+            zf.write(file, inner_name)
 
 
 if __name__ == '__main__':
