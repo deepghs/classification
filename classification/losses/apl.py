@@ -2,7 +2,6 @@
     Based on paper: https://proceedings.mlr.press/v119/ma20c.html
     PyTorch Implement: https://github.com/HanxunH/Active-Passive-Losses/blob/master/loss.py
 """
-from typing import Optional
 
 try:
     from typing import Literal
@@ -11,37 +10,8 @@ except (ImportError, ModuleNotFoundError):
 
 import torch
 import torch.nn.functional as F
-from .base import register_loss
 
-
-class WeightAttachment(torch.nn.Module):
-    def __init__(self, num_classes, weight=None):
-        torch.nn.Module.__init__(self)
-        self.num_classes = num_classes
-
-        if weight is None:
-            weight = torch.ones(num_classes, dtype=torch.float)
-        self.register_buffer('weights', torch.tensor(weight))
-        self.weights: Optional[torch.Tensor]
-
-    def forward(self, loss, labels):
-        return loss * self.weights[labels].to(loss.device)
-
-
-class LossReduction(torch.nn.Module):
-    def __init__(self, reduction: Literal['mean', 'sum'] = 'mean'):
-        torch.nn.Module.__init__(self)
-        if reduction not in {'mean', 'sum'}:
-            raise ValueError(f'Unknown reduction type - {reduction!r}.')
-        self.reduction = reduction
-
-    def forward(self, loss):
-        if self.reduction == 'mean':
-            return loss.mean()
-        elif self.reduction == 'sum':
-            return loss.sum()
-        else:
-            assert False, 'Should not reach here!'
+from .base import register_loss, WeightAttachment, LossReduction
 
 
 class NormalizedCrossEntropy(torch.nn.Module):
