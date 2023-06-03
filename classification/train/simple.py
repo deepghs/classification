@@ -23,6 +23,10 @@ from ..losses import get_loss_fn
 from ..models import get_backbone_model
 from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, plt_r_curve, plt_f1_curve, plt_roc_curve
 
+_PRESET_KWARGS = {
+    'pretrained': True,
+}
+
 
 def train_simple(
         workdir: str, model_name: str, labels: List[str],
@@ -44,6 +48,7 @@ def train_simple(
         step_scheduler_with_optimizer=False,
     )
 
+    model_args = {**_PRESET_KWARGS, **model_args}
     model, _model_name, _labels, _model_args = _load_last_ckpt(workdir)
     if model:
         logging.info(f'Load previous ckpt from work directory {workdir!r}.')
