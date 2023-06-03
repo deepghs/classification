@@ -39,8 +39,8 @@ def cli():
               help='Repository for publishing model.', show_default=True)
 @click.option('--revision', '-R', 'revision', type=str, default='main',
               help='Revision for pushing the model.', show_default=True)
-def cli(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, name: Optional[str],
-        repository: str, revision: str):
+def huggingface(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, name: Optional[str],
+                repository: str, revision: str):
     logging.try_init_root(logging.INFO)
 
     hf_client = HfApi(token=os.environ['HF_ACCESS_TOKEN'])
