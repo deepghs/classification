@@ -47,6 +47,12 @@ def export_model_from_workdir(workdir, export_dir, imgsize: int, non_dynamic: bo
     shutil.copyfile(model_filename, ckpt_file)
     files.append((ckpt_file, 'model.ckpt'))
 
+    meta_file = os.path.join(export_dir, f'{name}_meta.json')
+    logging.info(f'Exporting meta-information of model to {meta_file!r}')
+    with open(meta_file, 'w') as f:
+        json.dump(model.__arguments__, f, sort_keys=True, indent=4, ensure_ascii=False)
+    files.append((meta_file, 'meta.json'))
+
     metrics_file = os.path.join(export_dir, f'{name}_metrics.json')
     logging.info(f'Recording metrics to {metrics_file!r}')
     with open(metrics_file, 'w') as f:
