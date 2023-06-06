@@ -21,7 +21,7 @@ from tqdm.auto import tqdm
 from .base import register_task_type, put_meta_at_workdir
 from .metrics import cls_map_score, cls_auc_score
 from .profile import torch_model_profile
-from .session import _load_last_ckpt, TrainSession
+from .session import _load_last_ckpt, TrainSession, _load_best_ckpt
 from ..losses import get_loss_fn
 from ..models import get_backbone_model
 from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, plt_r_curve, plt_f1_curve, plt_roc_curve
@@ -80,7 +80,7 @@ def train_distillation(
         model = get_backbone_model(model_name, labels, **model_args)
         previous_epoch = 0
 
-    t_model, _t_model_name, _t_labels, _model_args = _load_last_ckpt(teacher_workdir)
+    t_model, _t_model_name, _t_labels, _t_model_args = _load_best_ckpt(teacher_workdir)
     if t_model:
         t_info = getattr(t_model, '__info__') or {}
         logging.info(f'Load teacher model from workdir {teacher_workdir!r}, with metrics {t_info!r}.')

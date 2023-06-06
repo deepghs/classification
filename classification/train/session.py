@@ -155,8 +155,8 @@ class TrainSession:
             logger.tb_eval_log(global_step, model, metrics)
 
 
-def _load_last_ckpt(workdir):
-    ckpt_file = os.path.join(workdir, 'ckpts', 'last.ckpt')
+def _load_ckpt(workdir, mode='last'):
+    ckpt_file = os.path.join(workdir, 'ckpts', f'{mode}.ckpt')
     if os.path.exists(ckpt_file):
         model = load_model_from_ckpt(ckpt_file)
         arguments = model.__arguments__.copy()
@@ -165,3 +165,11 @@ def _load_last_ckpt(workdir):
         return model, model_name, labels, arguments
     else:
         return None, None, None, None
+
+
+def _load_last_ckpt(workdir):
+    return _load_ckpt(workdir, 'last')
+
+
+def _load_best_ckpt(workdir):
+    return _load_ckpt(workdir, 'best')
