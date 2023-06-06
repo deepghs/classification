@@ -22,10 +22,14 @@ class ModelWithSoftMax(nn.Module):
 
 
 def export_model_to_onnx(model, onnx_filename, opset_version: int = 14, verbose: bool = True,
-                         imgsize: int = 384, dynamic: bool = True, no_optimize: bool = False):
+                         imgsize: int = 384, dynamic: bool = True, no_optimize: bool = False,
+                         use_softmax: bool = True):
     logging.info('Preparing input and model ...')
     example_input = torch.randn(1, 3, imgsize, imgsize).float()
-    model = ModelWithSoftMax(model.cpu()).float()
+    model = model.cpu()
+    if use_softmax:
+        model = ModelWithSoftMax(model)
+    model = model.float()
     model.eval()
     torch_model_profile(model, example_input)
 
@@ -45,7 +49,8 @@ def export_model_to_onnx(model, onnx_filename, opset_version: int = 14, verbose:
 
 
 def export_onnx_from_ckpt(model_filename, onnx_filename, opset_version: int = 14, verbose: bool = True,
-                          imgsize: int = 384, dynamic: bool = True, no_optimize: bool = False):
+                          imgsize: int = 384, dynamic: bool = True, no_optimize: bool = False,
+                          use_softmax: bool = True):
     model = load_model_from_ckpt(model_filename)
     _arguments = model.__arguments__
     model_name = _arguments['name']
@@ -61,7 +66,7 @@ def export_onnx_from_ckpt(model_filename, onnx_filename, opset_version: int = 14
     logging.info(f'Load from best ckeckpoint {model_filename!r}, with step {step!r}, metrics: {metrics!r}.')
     logging.info(f'Model name: {model_name!r}, labels: {labels!r}')
     try:
-        export_model_to_onnx(model, onnx_filename, opset_version, verbose, imgsize, dynamic, no_optimize)
+        export_model_to_onnx(model, onnx_filename, opset_version, verbose, imgsize, dynamic, no_optimize, use_softmax)
     except:
         logging.error('Export failed!')
         raise

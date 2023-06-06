@@ -16,6 +16,7 @@ from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 
+from .base import register_task_type, DEFAULT_TASK, put_meta_at_workdir
 from .metrics import cls_map_score, cls_auc_score
 from .profile import torch_model_profile
 from .session import _load_last_ckpt, TrainSession
@@ -26,6 +27,16 @@ from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, 
 _PRESET_KWARGS = {
     'pretrained': True,
 }
+
+_TASK_NAME = 'classify'
+assert _TASK_NAME == DEFAULT_TASK, f'Task name should be the same as DEFAULT_TASK, but {_TASK_NAME!r} found.'
+
+register_task_type(
+    _TASK_NAME,
+    onnx_conf=dict(
+        use_softmax=True,
+    ),
+)
 
 
 def train_simple(
@@ -43,6 +54,7 @@ def train_simple(
         global_seed(seed)
 
     os.makedirs(workdir, exist_ok=True)
+    put_meta_at_workdir(workdir, _TASK_NAME)
     accelerator = Accelerator(
         # mixed_precision=self.cfgs.mixed_precision,
         step_scheduler_with_optimizer=False,

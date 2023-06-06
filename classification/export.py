@@ -13,12 +13,15 @@ from ditk import logging
 
 from .models import load_model_from_ckpt
 from .onnx.export import export_onnx_from_ckpt, validate_onnx_model
+from .train import get_export_config, get_task_type_from_workdir
 from .utils import GLOBAL_CONTEXT_SETTINGS
 from .utils import print_version as _origin_print_version
 
 
 def export_model_from_workdir(workdir, export_dir, imgsize: int, non_dynamic: bool,
                               verbose: bool, name: Optional[str] = None) -> List[Tuple[str, str]]:
+    task = get_task_type_from_workdir(workdir)
+    export_config = get_export_config(task)
     model_filename = os.path.join(workdir, 'ckpts', 'best.ckpt')
     name = name or os.path.basename(os.path.abspath(workdir))
 
@@ -66,7 +69,7 @@ def export_model_from_workdir(workdir, export_dir, imgsize: int, non_dynamic: bo
         files.append((plt_file, f'plot_{key}.png'))
 
     onnx_file = os.path.join(export_dir, f'{name}.onnx')
-    export_onnx_from_ckpt(model_filename, onnx_file, 14, verbose, imgsize, not non_dynamic)
+    export_onnx_from_ckpt(model_filename, onnx_file, 14, verbose, imgsize, not non_dynamic, **export_config['onnx'])
     validate_onnx_model(onnx_file)
     files.append((onnx_file, 'model.onnx'))
 
