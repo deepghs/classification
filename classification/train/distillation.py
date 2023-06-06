@@ -17,6 +17,7 @@ from sklearn.metrics import accuracy_score
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
+import torch.nn.functional as F
 
 from .base import register_task_type, put_meta_at_workdir
 from .metrics import cls_map_score, cls_auc_score
@@ -145,8 +146,8 @@ def train_distillation(
 
             cls_loss = student_loss_fn(outputs, labels_)
             distillation_loss = distillation_loss_fn(
-                torch.softmax(outputs / temperature, dim=1),
-                torch.softmax(teacher_outputs / temperature, dim=1)
+                F.log_softmax(outputs / temperature, dim=1),
+                F.softmax(teacher_outputs / temperature, dim=1)
             )
             loss = alpha * cls_loss + (1 - alpha) * distillation_loss
 
