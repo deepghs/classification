@@ -36,6 +36,7 @@ def put_meta_at_workdir(workdir: str, task: str):
 def get_task_type_from_workdir(workdir: str) -> str:
     meta_file = os.path.join(workdir, _META_FILE)
     if os.path.exists(meta_file):
-        return json.loads(meta_file)['task']
+        with open(meta_file, 'r') as f:
+            return json.load(f)['task']
     else:
         return DEFAULT_TASK
