@@ -101,6 +101,7 @@ def train_simple(
     # noinspection PyTypeChecker
     model, optimizer, train_dataloader, test_dataloader, scheduler, loss_fn = \
         accelerator.prepare(model, optimizer, train_dataloader, test_dataloader, scheduler, loss_fn)
+    cm_size = max(6.0, len(labels) * 0.9)
 
     session = TrainSession(workdir, key_metric=key_metric)
     logging.info('Training start!')
@@ -142,6 +143,7 @@ def train_simple(
                     plt_confusion_matrix,
                     train_y_true, train_y_pred, labels,
                     title=f'Train Confusion Epoch {epoch}',
+                    figsize=(cm_size, cm_size),
                 ),
             }
         )
@@ -180,6 +182,7 @@ def train_simple(
                             plt_confusion_matrix,
                             test_y_true, test_y_pred, labels,
                             title=f'Test Confusion Epoch {epoch}',
+                            figsize=(cm_size, cm_size),
                         ),
                         'p_curve': plt_export(
                             plt_p_curve, test_y_true, test_y_score, labels,
