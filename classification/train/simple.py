@@ -170,14 +170,14 @@ def train_simple(
                     test_loss += loss.item() * inputs.size(0)
 
                     if _visuals:
-                        test_visuals.append(_visuals[0])
+                        test_visuals.append(_visuals[0].cpu())
                         test_need_visual = True
 
                 test_y_true = torch.concat(test_y_true).cpu().numpy()
                 test_y_pred = torch.concat(test_y_pred).cpu().numpy()
                 test_y_score = torch.concat(test_y_score).cpu().numpy()
                 if test_need_visual:
-                    test_full_visuals = torch.concat(test_visuals).cpu().numpy()
+                    test_full_visuals = torch.concat(test_visuals).numpy()
                     logging.info('Creating visual samples ...')
                     test_plot_visuals = {
                         f'sample_{labels[li]}': plot_samples(
