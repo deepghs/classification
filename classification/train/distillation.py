@@ -92,7 +92,7 @@ def train_distillation(
         raise FileNotFoundError(f'Teacher model not found in workdir {teacher_workdir!r}.')
     t_model.eval()
 
-    sample_input, _ = test_dataset[0]
+    sample_input, *_, _ = test_dataset[0]
     torch_model_profile(model, sample_input.unsqueeze(0))  # profile the model
 
     num_workers = num_workers or min(os.cpu_count(), batch_size)
