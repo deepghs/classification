@@ -6,15 +6,16 @@ from torch.utils.data import random_split, Dataset
 
 
 class WrappedImageDataset(Dataset):
-    def __init__(self, dataset, transform=None):
+    def __init__(self, dataset, *transforms):
         self.dataset = dataset
-        self.transform = transform
+        if not transforms:
+            self.transforms = [lambda x: x]
+        else:
+            self.transforms = list(transforms)
 
     def __getitem__(self, item):
         data, label = self.dataset[item]
-        if self.transform is not None:
-            data = self.transform(data)
-        return data, label
+        return *(m(data) for m in self.transforms), label
 
     def __len__(self):
         return len(self.dataset)
