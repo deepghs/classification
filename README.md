@@ -8,7 +8,7 @@ import math
 from ditk import logging
 from torchvision import transforms
 
-from classification.dataset import LocalImageDataset, dataset_split, WrappedImageDataset
+from classification.dataset import LocalImageDataset, dataset_split, WrappedImageDataset, RangeRandomCrop
 from classification.train import train_simple
 
 logging.try_init_root(logging.INFO)
@@ -16,6 +16,8 @@ logging.try_init_root(logging.INFO)
 # Meta information for task
 LABELS = ['monochrome', 'normal']  # labels of each class
 WEIGHTS = [math.e ** 2, 1.0]  # weight of each class
+assert len(LABELS) == len(WEIGHTS), \
+    f'Labels and weights should have the same length, but {len(LABELS)}(labels) and {len(WEIGHTS)}(weights) found.'
 
 # dataset directory (use your own, like the following)
 # <dataset_dir>
@@ -33,12 +35,12 @@ DATASET_DIR = '/my/dataset/directory'
 # data augment and preprocessing for train dataset
 TRANSFORM_TRAIN = transforms.Compose([
     # data augmentation
-    transforms.Resize(450),
-    transforms.RandomCrop(400, padding=50, pad_if_needed=True, padding_mode='reflect'),
-    transforms.RandomRotation((-180, 180)),
+    # prob_greyscale(0.5),  # use this line when color is not important
+    transforms.Resize((500, 500)),
+    RangeRandomCrop((400, 500), padding=0, pad_if_needed=True, padding_mode='reflect'),
+    transforms.RandomRotation((-45, 45)),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
-    transforms.ColorJitter(0.10, 0.10, 0.10, 0.10),
+    transforms.ColorJitter(0.10, 0.10, 0.05, 0.03),
 
     # preprocessing (recommended to be the same as tests)
     transforms.Resize((384, 384)),
@@ -54,7 +56,8 @@ TRANSFORM_TEST = transforms.Compose([
 ])
 
 # prepare the dataset
-dataset = LocalImageDataset(DATASET_DIR, LABELS)
+# disable cache when training on large dataset
+dataset = LocalImageDataset(DATASET_DIR, LABELS, no_cache=True)
 test_ratio = 0.2
 train_dataset, test_dataset = dataset_split(dataset, [1 - test_ratio, test_ratio])
 train_dataset = WrappedImageDataset(train_dataset, TRANSFORM_TRAIN)
@@ -70,7 +73,10 @@ if __name__ == '__main__':
         # all model in timm is usable, 
         # see supported models with timm.list_models() or see the performance table at 
         # https://github.com/huggingface/pytorch-image-models/blob/main/results/results-imagenet.csv
-        model_name='mobilenetv3_large_100',
+        # Recommendation:
+        # 1. use caformer_s36.sail_in22k_ft_in1k_384 for training
+        # 2. use mobilenetv3_large_100 for distillation
+        model_name='caformer_s36.sail_in22k_ft_in1k_384',
 
         # labels and weights, all 1 when weights not given
         labels=LABELS,
@@ -85,11 +91,13 @@ if __name__ == '__main__':
         num_workers=8,
         eval_epoch=5,
         key_metric='accuracy',
+        loss='focal',  # use `sce` when the dataset is guaranteed to be cleaned
         seed=0,
+        # drop_path_rate=0.4,  # use this when training on caformer
 
         # hyper-parameters
         batch_size=16,
-        learning_rate=1e-3,  # 1.5e-4 recommended for vit networks
+        learning_rate=1e-3,  # 5e-5 recommended for caformer, 1e-5 for fine-tuning
         weight_decay=1e-3,
     )
 ```
