@@ -25,7 +25,8 @@ from .profile import torch_model_profile
 from .session import _load_last_ckpt, TrainSession, _load_best_ckpt
 from ..losses import get_loss_fn
 from ..models import get_backbone_model
-from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, plt_r_curve, plt_f1_curve, plt_roc_curve
+from ..plot import plt_export, plt_confusion_matrix, plt_pr_curve, plt_p_curve, plt_r_curve, plt_f1_curve, \
+    plt_roc_curve, plot_samples
 
 _PRESET_KWARGS = {
     'pretrained': True,
@@ -185,7 +186,8 @@ def train_distillation(
                 test_cls_loss = 0.0
                 test_total = 0
                 test_y_true, test_y_pred, test_y_score = [], [], []
-                for i, (inputs, labels_) in enumerate(tqdm(test_dataloader)):
+                test_visuals, test_need_visual = [], False
+                for i, (inputs, *_visuals, labels_) in enumerate(tqdm(test_dataloader)):
                     inputs = inputs.float().to(accelerator.device)
                     labels_ = labels_.to(accelerator.device)
 
@@ -198,9 +200,26 @@ def train_distillation(
                     cls_loss = student_loss_fn(outputs, labels_)
                     test_cls_loss += cls_loss.item() * inputs.size(0)
 
+                    if _visuals:
+                        test_visuals.append(_visuals[0])
+                        test_need_visual = True
+
                 test_y_true = torch.concat(test_y_true).cpu().numpy()
                 test_y_pred = torch.concat(test_y_pred).cpu().numpy()
                 test_y_score = torch.concat(test_y_score).cpu().numpy()
+                if test_need_visual:
+                    test_full_visuals = torch.concat(test_visuals).cpu().numpy()
+                    logging.info('Creating visual samples ...')
+                    test_plot_visuals = {
+                        f'sample_{labels[li]}': plot_samples(
+                            test_y_true, test_y_pred, test_full_visuals,
+                            concen_cls=li, labels=labels
+                        )
+                        for li in range(len(labels))
+                    }
+                else:
+                    test_plot_visuals = {}
+
                 session.tb_eval_log(
                     global_step=epoch,
                     model=model,
@@ -233,6 +252,7 @@ def train_distillation(
                         'roc_curve': plt_export(
                             plt_roc_curve, test_y_true, test_y_score, labels,
                             title=f'ROC Curve Epoch {epoch}',
-                        )
+                        ),
+                        **test_plot_visuals,
                     }
                 )
