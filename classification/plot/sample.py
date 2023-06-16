@@ -8,7 +8,7 @@ from hbutils.system import TemporaryDirectory
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-def plot_samples(y_true, y_pred, visuals, concen_cls: int, labels: List[str],
+def plot_samples(y_true, y_pred, tids, visual_dataset, concen_cls: int, labels: List[str],
                  samples_per_case: int = 10, figsize=None):
     figsize = figsize or (samples_per_case * 0.85, (len(labels) + 1) * 0.9)
     fig = plt.figure(figsize=figsize)
@@ -18,14 +18,15 @@ def plot_samples(y_true, y_pred, visuals, concen_cls: int, labels: List[str],
 
         total = (y_true == concen_cls).sum()
         for xi, row in enumerate(grid.axes_row):
-            ids, = np.where((y_true == concen_cls) & (y_pred == xi))
+            ids = tids[(y_true == concen_cls) & (y_pred == xi)]
             cnt = ids.shape[0]
             if cnt == 0:
                 cases = []
             else:
-                ids = ids[:samples_per_case]
-                cases = (visuals[ids, ...].transpose(0, 2, 3, 1) * 255.0).astype(np.uint8)
-                cases = list(cases)
+                cases = [
+                    (visual_dataset[i_].numpy().transpose(1, 2, 0) * 255.0).astype(np.uint8)
+                    for i_ in ids[:samples_per_case]
+                ]
             if len(cases) < samples_per_case:
                 cases += [None] * (samples_per_case - len(cases))
 
