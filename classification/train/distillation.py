@@ -152,7 +152,7 @@ def train_distillation(
                 F.log_softmax(outputs / temperature, dim=1),
                 F.softmax(teacher_outputs / temperature, dim=1)
             )
-            loss = alpha * cls_loss + (1 - alpha) * distillation_loss
+            loss = alpha * cls_loss + (1 - alpha) * (temperature ** 2) * distillation_loss
 
             # loss.backward()
             accelerator.backward(loss)
