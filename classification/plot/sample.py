@@ -11,7 +11,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 def plot_samples(y_true, y_pred, tids, visual_dataset, concen_cls: int, labels: List[str],
                  samples_per_case: int = 10, figsize=None):
     figsize = figsize or (samples_per_case * 0.85, len(labels) * 0.75 + 1)
-    fig = plt.figure(figsize=figsize)
+    fig = plt.Figure(figsize=figsize)
     try:
         fig.tight_layout()
         grid = ImageGrid(fig, 111, nrows_ncols=(len(labels), samples_per_case), axes_pad=0, share_all=True)
