@@ -5,7 +5,7 @@ matplotlib
 pillow
 numpy
 scikit-learn
-huggingface_hub
+huggingface_hub>=0.14.0
 tqdm
 opencv-python
 pandas
@@ -18,3 +18,4 @@ accelerate
 DI-toolkit
 thop
 click>=7
+tabulate>=0.9.0

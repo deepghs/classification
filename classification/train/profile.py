@@ -9,3 +9,5 @@ def torch_model_profile(model, input_):
         flops, params = profile(model, (input_,))
 
     logging.info(f'Params: {params / 1e6:.2f}M, FLOPs: {flops / 1e9:.2f}G.')
+
+    return flops, params
