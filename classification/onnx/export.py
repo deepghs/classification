@@ -77,7 +77,7 @@ def export_onnx_from_ckpt(model_filename, onnx_filename, opset_version: int = 14
 def validate_onnx_model(onnx_filename):
     logging.info(f'Validating the exported onnx file {onnx_filename!r} ...')
     import onnxruntime as ort
-    model = ort.InferenceSession(onnx_filename)
+    model = ort.InferenceSession(onnx_filename, providers=["CPUExecutionProvider"])
 
     with io.StringIO() as sf:
         print('Input items:', file=sf)
