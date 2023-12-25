@@ -17,4 +17,4 @@ __DESCRIPTION__ = 'A convenient and user-friendly anime-style image data process
 __AUTHOR__ = 'narugo1992, 7eu7d'
 
 #: Email of the authors'.
-__AUTHOR_EMAIL__ = 'narugo@126.com'
+__AUTHOR_EMAIL__ = 'narugo992@gmail.com'

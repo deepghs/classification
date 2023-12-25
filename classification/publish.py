@@ -45,7 +45,8 @@ def huggingface(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, na
 
     hf_client = HfApi(token=os.environ['HF_ACCESS_TOKEN'])
     logging.info(f'Initialize repository {repository!r}')
-    hf_client.create_repo(repo_id=repository, repo_type='model', exist_ok=True)
+    if not hf_client.repo_exists(repo_id=repository, repo_type='model'):
+        hf_client.create_repo(repo_id=repository, repo_type='model', exist_ok=True)
 
     with TemporaryDirectory() as td:
         name = name or os.path.basename(os.path.abspath(workdir))

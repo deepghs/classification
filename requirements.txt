@@ -5,7 +5,7 @@ matplotlib
 pillow
 numpy
 scikit-learn
-huggingface_hub>=0.14.0
+huggingface_hub>=0.17.0
 tqdm
 opencv-python
 pandas
