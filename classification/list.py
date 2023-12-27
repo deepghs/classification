@@ -10,7 +10,7 @@ import pandas as pd
 import torch
 from ditk import logging
 from hbutils.string import plural_word
-from huggingface_hub import HfFileSystem, hf_hub_download, hf_hub_url
+from huggingface_hub import HfFileSystem, hf_hub_url, HfApi
 from huggingface_hub.constants import ENDPOINT
 from tqdm.auto import tqdm
 
@@ -58,7 +58,8 @@ def huggingface(imgsize: int, repository: str, revision: str, columns: Tuple[str
     logging.try_init_root(logging.INFO)
     columns = columns or ('name', 'FLOPS', 'params', 'accuracy', 'AUC', 'confusion', 'labels')
 
-    hf_fs = HfFileSystem(token=os.environ.get('HF_ACCESS_TOKEN'))
+    hf_fs = HfFileSystem(token=os.environ.get('HF_TOKEN'))
+    hf_client = HfApi(token=os.environ.get('HF_TOKEN'))
 
     names = [fn.split('/')[-2] for fn in hf_fs.glob(f'{repository}@{revision}/*/model.ckpt')]
     logging.info(f'{plural_word(len(names), "model")} detected in {repository}@{revision}')
@@ -68,13 +69,13 @@ def huggingface(imgsize: int, repository: str, revision: str, columns: Tuple[str
         files = hf_fs.ls(f'{repository}@{revision}/{name}')
         values = {'name': name}
 
-        model = load_model_from_ckpt(hf_hub_download(repository, f'{name}/model.ckpt', revision=revision))
+        model = load_model_from_ckpt(hf_client.hf_hub_download(repository, f'{name}/model.ckpt', revision=revision))
         input_ = torch.randn(1, 3, imgsize, imgsize)
         flops, params = torch_model_profile(model, input_)
         values['FLOPS'] = f'{flops / 1e9:.2f}G'
         values['params'] = f'{params / 1e6:.2f}M'
 
-        with open(hf_hub_download(repository, f'{name}/meta.json', revision=revision), 'r') as f:
+        with open(hf_client.hf_hub_download(repository, f'{name}/meta.json', revision=revision), 'r') as f:
             values['labels'] = ', '.join([f'`{x}`' for x in json.load(f)['labels']])
 
         plots = {}
@@ -92,7 +93,7 @@ def huggingface(imgsize: int, repository: str, revision: str, columns: Tuple[str
                     )
                 plots[key] = value
 
-        with open(hf_hub_download(repository, f'{name}/metrics.json', revision=revision), 'r') as f:
+        with open(hf_client.hf_hub_download(repository, f'{name}/metrics.json', revision=revision), 'r') as f:
             metrics = json.load(f)
 
         item = {}
