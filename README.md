@@ -1,6 +1,15 @@
 # classification
 
+## Installation
+
+```shell
+pip install -r requirements.txt
+pip install -r requirements-onnx.txt
+```
+
 ## Let's Training the Classifier
+
+Save this to `train.py`
 
 ```python
 import math
@@ -8,7 +17,7 @@ import math
 from ditk import logging
 from torchvision import transforms
 
-from classification.dataset import LocalImageDataset, dataset_split, WrappedImageDataset, RangeRandomCrop
+from classification.dataset import LocalImageDataset, dataset_split, WrappedImageDataset, RangeRandomCrop, prob_greyscale
 from classification.train import train_simple
 
 logging.try_init_root(logging.INFO)
@@ -95,28 +104,36 @@ if __name__ == '__main__':
         test_dataset=test_dataset,
 
         # train settings, pretrained model will be used
-        max_epochs=500,
+        max_epochs=100,
         num_workers=8,
-        eval_epoch=5,
+        eval_epoch=1,
         key_metric='accuracy',
         loss='focal',  # use `sce` when the dataset is not guaranteed to be cleaned
         seed=0,
-        # drop_path_rate=0.4,  # use this when training on caformer
+        drop_path_rate=0.4,  # use this when training on caformer
 
         # hyper-parameters
         batch_size=16,
-        learning_rate=1e-4,  # 1e-5 recommended for caformer's fine-tuning
+        learning_rate=1e-5,  # 1e-5 recommended for caformer's fine-tuning
         weight_decay=1e-3,
     )
 ```
 
+And run
+
+```
+accelerate launch train.py
+```
+
 ## Distillate the Model
+
+Save this to `dist.py`
 
 ```python
 from ditk import logging
 from torchvision import transforms
 
-from classification.dataset import LocalImageDataset, dataset_split, WrappedImageDataset, RangeRandomCrop
+from classification.dataset import LocalImageDataset, dataset_split, WrappedImageDataset, RangeRandomCrop, prob_greyscale
 from classification.train import train_distillation
 
 logging.try_init_root(logging.INFO)
@@ -226,6 +243,12 @@ if __name__ == '__main__':
 
 ```
 
+And then run
+
+```shell
+accelerate launch dist.py
+```
+
 ## Export onnx model
 
 ### From checkpoint
@@ -275,3 +298,27 @@ Options:
   -V, --verbose            Show verbose information.
   -h, --help               Show this message and exit.
 ```
+
+## Publish Trained Models
+
+Before start, set the `HF_TOKEN` variable to your huggingface token
+
+```shell
+# on Linux
+export HF_TOKEN=xxxxxxxx
+```
+
+Publish trained models (including ckpt, onnx, metrics data and figures) to huggingface
+repository `your/huggingface_repo`
+
+```shell
+python -m classification.publish huggingface -w runs/your_model_dir -n name_of_the_model -r your/huggingface_repo
+```
+
+List all the models in given repository `your/huggingface_repo`, which can be used in README
+
+```shell
+python -m classification.list huggingface -r your/huggingface_repo
+```
+
+An example model repository: https://huggingface.co/deepghs/anime_style_ages
