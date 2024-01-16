@@ -6,13 +6,12 @@ import torch.nn.functional as F
 
 from .base import register_loss, LossReduction
 
-register_loss('ce', nn.CrossEntropyLoss)
-
 
 class LabelSmoothingCrossEntropy(nn.Module):
-
-    def __init__(self, smoothing: float = 0.1, reduction: Literal['mean', 'sum'] = 'mean', weight=None):
+    def __init__(self, num_classes: int, smoothing: float = 0.1,
+                 reduction: Literal['mean', 'sum'] = 'mean', weight=None):
         super(LabelSmoothingCrossEntropy, self).__init__()
+        _ = num_classes
         self.smoothing = smoothing
         weight = torch.as_tensor(weight).float() if weight is not None else weight
         self.register_buffer('weight', weight)
