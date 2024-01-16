@@ -106,6 +106,7 @@ def train_simple(
         accelerator.prepare(model, optimizer, train_dataloader, test_dataloader, scheduler, loss_fn)
     cm_size = max(6.0, len(labels) * 0.9)
 
+    logging.info(f'Model\'s arguments: {model.__arguments__!r}, info: {model.__info__!r}.')
     session = TrainSession(workdir, key_metric=key_metric)
     logging.info('Training start!')
     for epoch in range(previous_epoch + 1, max_epochs + 1):
