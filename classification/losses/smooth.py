@@ -6,6 +6,8 @@ import torch.nn.functional as F
 
 from .base import register_loss, LossReduction
 
+register_loss('ce', nn.CrossEntropyLoss)
+
 
 class LabelSmoothingCrossEntropy(nn.Module):
 
