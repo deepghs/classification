@@ -48,12 +48,12 @@ def register_loss(name: str, module: Type[torch.nn.Module], *args, **kwargs):
         raise ValueError(f'Loss {name!r} already exist!')
 
 
-def get_loss_fn(name: str, num_classes: int, weight, reduction: Literal['mean', 'sum'] = 'mean'):
+def get_loss_fn(name: str, num_classes: int, weight, reduction: Literal['mean', 'sum'] = 'mean', **loss_args):
     if name in _KNOWN_LOSSES:
         module, args, kwargs = _KNOWN_LOSSES[name]
 
         # noinspection PyArgumentList
-        return module(num_classes, *args, reduction=reduction, weight=weight, **kwargs)
+        return module(num_classes, *args, reduction=reduction, weight=weight, **kwargs, **loss_args)
     else:
         raise ValueError(f'Loss function should be one of the {list_losses()!r}, but {name!r} found.')
 

@@ -47,7 +47,7 @@ def train_simple(
         batch_size: int = 16, max_epochs: int = 500, learning_rate: float = 0.001,
         weight_decay: float = 1e-3, num_workers: Optional[int] = 8, eval_epoch: int = 5,
         key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy', loss='focal',
-        loss_weight=None, seed: Optional[int] = 0, **model_args):
+        loss_weight=None, seed: Optional[int] = 0, loss_args: Optional[dict] = None, **model_args):
     if seed is not None:
         # native random, numpy, torch and faker's seeds are includes
         # if you need to register more library for seeding, see:
@@ -93,7 +93,7 @@ def train_simple(
 
     if loss_weight is None:
         loss_weight = torch.ones(len(labels), dtype=torch.float)
-    loss_fn = get_loss_fn(loss, len(labels), loss_weight, reduction='mean')
+    loss_fn = get_loss_fn(loss, len(labels), loss_weight, **dict(loss_args or {}), reduction='mean')
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     scheduler = lr_scheduler.OneCycleLR(
         optimizer, max_lr=learning_rate,

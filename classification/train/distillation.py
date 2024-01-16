@@ -50,7 +50,7 @@ def train_distillation(
         weight_decay: float = 1e-3, num_workers: Optional[int] = 8, eval_epoch: int = 5,
         temperature: float = 7.0, alpha=0.3,
         key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy', cls_loss='focal',
-        loss_weight=None, seed: Optional[int] = 0, **model_args):
+        loss_weight=None, seed: Optional[int] = 0, loss_args: Optional[dict] = None, **model_args):
     if seed is not None:
         # native random, numpy, torch and faker's seeds are includes
         # if you need to register more library for seeding, see:
@@ -106,7 +106,7 @@ def train_distillation(
 
     if loss_weight is None:
         loss_weight = torch.ones(len(labels), dtype=torch.float)
-    student_loss_fn = get_loss_fn(cls_loss, len(labels), loss_weight, reduction='mean')
+    student_loss_fn = get_loss_fn(cls_loss, len(labels), loss_weight, **dict(loss_args or {}), reduction='mean')
     distillation_loss_fn = nn.KLDivLoss(reduction="batchmean")
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     scheduler = lr_scheduler.OneCycleLR(
