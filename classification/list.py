@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import warnings
 from functools import partial
 from typing import Tuple
 from urllib.parse import quote
@@ -114,7 +115,8 @@ def huggingface(imgsize: int, repository: str, revision: str, columns: Tuple[str
                 else:
                     item[key] = metrics[c]
             else:
-                raise KeyError(f'Unknown column {c!r} for model {name!r}.')
+                warnings.warn(f'Unknown column {c!r} for model {name!r}.')
+                item[key] = 'N/A'
 
         rows.append(item)
 
