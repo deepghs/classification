@@ -50,7 +50,8 @@ def train_distillation(
         weight_decay: float = 1e-3, num_workers: Optional[int] = 8, eval_epoch: int = 5,
         temperature: float = 7.0, alpha=0.3,
         key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy', cls_loss='focal',
-        loss_weight=None, seed: Optional[int] = 0, loss_args: Optional[dict] = None, **model_args):
+        loss_weight=None, seed: Optional[int] = 0, loss_args: Optional[dict] = None,
+        img_size: int = 384, **model_args):
     if seed is not None:
         # native random, numpy, torch and faker's seeds are includes
         # if you need to register more library for seeding, see:
@@ -65,7 +66,7 @@ def train_distillation(
         step_scheduler_with_optimizer=False,
     )
 
-    model_args = {**_PRESET_KWARGS, **model_args}
+    model_args = {**_PRESET_KWARGS, 'img_size': img_size, **model_args}
     model, _model_name, _labels, _model_args = _load_last_ckpt(workdir)
     if model:
         logging.info(f'Load previous ckpt from work directory {workdir!r}.')
