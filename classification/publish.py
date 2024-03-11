@@ -27,10 +27,8 @@ def cli():
              help='Publish model to huggingface model repository')
 @click.option('--workdir', '-w', 'workdir', type=click.Path(file_okay=False, exists=True), required=True,
               help='Work directory of the training.', show_default=True)
-@click.option('--imgsize', '-s', 'imgsize', type=int, default=384,
+@click.option('--imgsize', '-s', 'imgsize', type=int, default=None,
               help='Image size for input.', show_default=True)
-@click.option('--non-dynamic', '-D', 'non_dynamic', is_flag=True, type=bool, default=False,
-              help='Do not export model with dynamic input height and width.', show_default=True)
 @click.option('--verbose', '-V', 'verbose', is_flag=True, type=bool, default=False,
               help='Show verbose information.', show_default=True)
 @click.option('--name', '-n', 'name', type=str, default=None,
@@ -39,8 +37,7 @@ def cli():
               help='Repository for publishing model.', show_default=True)
 @click.option('--revision', '-R', 'revision', type=str, default='main',
               help='Revision for pushing the model.', show_default=True)
-def huggingface(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, name: Optional[str],
-                repository: str, revision: str):
+def huggingface(workdir: str, imgsize: int, verbose: bool, name: Optional[str], repository: str, revision: str):
     logging.try_init_root(logging.INFO)
 
     hf_client = HfApi(token=os.environ['HF_TOKEN'])
@@ -50,7 +47,7 @@ def huggingface(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, na
 
     with TemporaryDirectory() as td:
         name = name or os.path.basename(os.path.abspath(workdir))
-        files = export_model_from_workdir(workdir, td, imgsize, non_dynamic, verbose, name)
+        files = export_model_from_workdir(workdir, td, imgsize, True, verbose, name)
         current_time = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
         commit_message = f"Publish model {name}, on {current_time}"
         logging.info(f'Publishing model {name!r} to repository {repository!r} ...')

@@ -18,8 +18,8 @@ from .utils import GLOBAL_CONTEXT_SETTINGS
 from .utils import print_version as _origin_print_version
 
 
-def export_model_from_workdir(workdir, export_dir, imgsize: int, non_dynamic: bool,
-                              verbose: bool, name: Optional[str] = None) -> List[Tuple[str, str]]:
+def export_model_from_workdir(workdir, export_dir, imgsize: int = None, non_dynamic: bool = True,
+                              verbose: bool = False, name: Optional[str] = None) -> List[Tuple[str, str]]:
     task = get_task_type_from_workdir(workdir)
     export_config = get_export_config(task)
     model_filename = os.path.join(workdir, 'ckpts', 'best.ckpt')
@@ -85,18 +85,16 @@ print_version = partial(_origin_print_version, 'onnx')
               help="Utils with exporting best checkpoints.")
 @click.option('--workdir', '-w', 'workdir', type=click.Path(file_okay=False, exists=True), required=True,
               help='Work directory of the training.', show_default=True)
-@click.option('--imgsize', '-s', 'imgsize', type=int, default=384,
+@click.option('--imgsize', '-s', 'imgsize', type=int, default=None,
               help='Image size for input.', show_default=True)
-@click.option('--non-dynamic', '-D', 'non_dynamic', is_flag=True, type=bool, default=False,
-              help='Do not export model with dynamic input height and width.', show_default=True)
 @click.option('--verbose', '-V', 'verbose', is_flag=True, type=bool, default=False,
               help='Show verbose information.', show_default=True)
 @click.option('--name', '-n', 'name', type=str, default=None,
               help='Name of the checkpoint. Default is the basename of the work directory.', show_default=True)
-def cli(workdir: str, imgsize: int, non_dynamic: bool, verbose: bool, name: Optional[str]):
+def cli(workdir: str, imgsize: int, verbose: bool, name: Optional[str]):
     logging.try_init_root(logging.INFO)
     export_dir = os.path.join(workdir, 'export')
-    files = export_model_from_workdir(workdir, export_dir, imgsize, non_dynamic, verbose, name)
+    files = export_model_from_workdir(workdir, export_dir, imgsize, True, verbose, name)
 
     zip_file = os.path.join(export_dir, f'{name}.zip')
     logging.info(f'Packing all the above file to archive {zip_file!r}')

@@ -1,4 +1,5 @@
 import io
+from typing import Optional
 
 import numpy as np
 import torch
@@ -49,12 +50,13 @@ def export_model_to_onnx(model, onnx_filename, opset_version: int = 14, verbose:
 
 
 def export_onnx_from_ckpt(model_filename, onnx_filename, opset_version: int = 14, verbose: bool = True,
-                          imgsize: int = 384, dynamic: bool = True, no_optimize: bool = False,
+                          imgsize: Optional[int] = None, dynamic: bool = True, no_optimize: bool = False,
                           use_softmax: bool = True):
     model = load_model_from_ckpt(model_filename)
     _arguments = model.__arguments__
     model_name = _arguments['name']
     labels = _arguments['labels']
+    imgsize = imgsize or _arguments.get('img_size') or 384
 
     _info = model.__info__.copy()
     step = _info.pop('step')
