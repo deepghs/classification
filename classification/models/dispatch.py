@@ -3,7 +3,9 @@ import torch
 
 
 def get_backbone_model(name, labels, **kwargs):
-    model = timm.create_model(name, num_classes=len(labels), **kwargs)
+    model = timm.create_model(name, **kwargs)
+    if model.num_classes != len(labels):
+        model.reset_classifier(num_classes=len(labels))
     model.__arguments__ = {'name': name, 'labels': labels, **kwargs}
     model.__info__ = {}
     return model.float()
