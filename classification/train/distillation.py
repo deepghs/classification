@@ -233,6 +233,8 @@ def train_distillation(
 
                 print('test_y_true', np.any(np.isnan(test_y_true)))
                 print('test_y_score', np.any(np.isnan(test_y_score)))
+                print('test_y_score', np.sum(np.isnan(test_y_score)))
+                print('test_y_score', np.mean(np.isnan(test_y_score)))
                 session.tb_eval_log(
                     global_step=epoch,
                     model=model,
