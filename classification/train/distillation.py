@@ -2,6 +2,7 @@ import os
 import warnings
 from typing import Optional, List
 
+import numpy as np
 from torch import nn
 
 try:
@@ -230,6 +231,8 @@ def train_distillation(
                 else:
                     test_plot_visuals = {}
 
+                print('test_y_true', np.any(np.isnan(test_y_true)))
+                print('test_y_score', np.any(np.isnan(test_y_score)))
                 session.tb_eval_log(
                     global_step=epoch,
                     model=model,
