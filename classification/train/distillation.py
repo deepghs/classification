@@ -231,14 +231,6 @@ def train_distillation(
                 else:
                     test_plot_visuals = {}
 
-                print('test_y_true', np.any(np.isnan(test_y_true)))
-                print('test_y_true', test_y_true.shape, test_y_true.dtype)
-                print('test_y_score', np.any(np.isnan(test_y_score)))
-                print('test_y_score', np.sum(np.isnan(test_y_score)))
-                print('test_y_score', np.mean(np.isnan(test_y_score)))
-                print('test_y_score', test_y_score.shape, test_y_score.dtype)
-                print('test_y_pred', np.any(np.isnan(test_y_pred)))
-                print('test_y_pred', test_y_pred.shape, test_y_pred.dtype)
                 session.tb_eval_log(
                     global_step=epoch,
                     model=model,
