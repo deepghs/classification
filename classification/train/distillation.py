@@ -81,7 +81,11 @@ def train_distillation(
         logging.info(f'Previous step is {previous_epoch!r}')
     else:
         logging.info(f'No previous ckpt found, load new model {model_name!r} with {model_args!r}.')
-        model = get_backbone_model(model_name, labels, **model_args)
+        try:
+            model = get_backbone_model(model_name, labels, **model_args)
+        except TypeError:  # img_size not supported
+            model = get_backbone_model(model_name, labels, **{
+                key: value for key, value in model_args.items() if key != 'img_size'})
         previous_epoch = 0
 
     t_model, _t_model_name, _t_labels, _t_model_args = _load_best_ckpt(teacher_workdir)
