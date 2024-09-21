@@ -13,6 +13,7 @@ from ditk import logging
 from hbutils.string import plural_word
 from huggingface_hub import HfFileSystem, hf_hub_url, HfApi
 from huggingface_hub.constants import ENDPOINT
+from huggingface_hub.hf_api import RepoFile
 from tqdm.auto import tqdm
 
 from classification.models import load_model_from_ckpt
@@ -76,6 +77,14 @@ def huggingface(repository: str, revision: str, columns: Tuple[str, ...], show_i
         values['FLOPS'] = f'{flops / 1e9:.2f}G'
         values['params'] = f'{params / 1e6:.2f}M'
 
+        repo_file: RepoFile = list(hf_client.list_files_info(
+            repo_id=repository,
+            repo_type='model',
+            paths=[f'{name}/model.ckpt'],
+            expand=True,
+        ))[0]
+        last_commit_at = repo_file.last_commit.date.timestamp()
+
         with open(hf_client.hf_hub_download(repository, f'{name}/meta.json', revision=revision), 'r') as f:
             values['labels'] = ', '.join([f'`{x}`' for x in json.load(f)['labels']])
 
@@ -118,9 +127,13 @@ def huggingface(repository: str, revision: str, columns: Tuple[str, ...], show_i
                 warnings.warn(f'Unknown column {c!r} for model {name!r}.')
                 item[key] = 'N/A'
 
+        item['created_at'] = last_commit_at
         rows.append(item)
 
-    print(pd.DataFrame(rows).to_markdown(index=False, numalign="center", stralign="center"))
+    df = pd.DataFrame(rows)
+    df = df.sort_values(by=['created_at'], ascending=[False])
+    del df['created_at']
+    print(df.to_markdown(index=False, numalign="center", stralign="center"))
 
 
 if __name__ == '__main__':
