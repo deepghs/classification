@@ -77,7 +77,7 @@ def huggingface(repository: str, revision: str, columns: Tuple[str, ...], show_i
         values['FLOPS'] = f'{flops / 1e9:.2f}G'
         values['params'] = f'{params / 1e6:.2f}M'
 
-        repo_file: RepoFile = list(hf_client.list_files_info(
+        repo_file: RepoFile = list(hf_client.get_paths_info(
             repo_id=repository,
             repo_type='model',
             paths=[f'{name}/model.ckpt'],
