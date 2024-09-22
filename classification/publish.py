@@ -47,7 +47,15 @@ def huggingface(workdir: str, imgsize: int, verbose: bool, name: Optional[str], 
 
     with TemporaryDirectory() as td:
         name = name or os.path.basename(os.path.abspath(workdir))
-        files = export_model_from_workdir(workdir, td, imgsize, True, verbose, name)
+        files = export_model_from_workdir(
+            workdir=workdir,
+            export_dir=td,
+            imgsize=imgsize,
+            non_dynamic=True,
+            verbose=verbose,
+            name=name,
+            logfile_anonymous=True,
+        )
         current_time = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
         commit_message = f"Publish model {name}, on {current_time}"
         logging.info(f'Publishing model {name!r} to repository {repository!r} ...')

@@ -1,5 +1,7 @@
+import glob
 import json
 import os
+import re
 import shutil
 import zipfile
 from functools import partial
@@ -10,6 +12,7 @@ import numpy as np
 import torch
 from PIL import Image
 from ditk import logging
+from hbutils.encoding import sha3
 
 from .models import load_model_from_ckpt
 from .onnx.export import export_onnx_from_ckpt, validate_onnx_model
@@ -17,9 +20,12 @@ from .train import get_export_config, get_task_type_from_workdir
 from .utils import GLOBAL_CONTEXT_SETTINGS
 from .utils import print_version as _origin_print_version
 
+_LOG_FILE_PATTERN = re.compile(r'^events\.out\.tfevents\.(?P<timestamp>\d+)\.(?P<machine>[^.]+)\.(?P<extra>[\s\S]+)$')
+
 
 def export_model_from_workdir(workdir, export_dir, imgsize: int = None, non_dynamic: bool = True,
-                              verbose: bool = False, name: Optional[str] = None) -> List[Tuple[str, str]]:
+                              verbose: bool = False, name: Optional[str] = None,
+                              logfile_anonymous: bool = True) -> List[Tuple[str, str]]:
     task = get_task_type_from_workdir(workdir)
     export_config = get_export_config(task)
     model_filename = os.path.join(workdir, 'ckpts', 'best.ckpt')
@@ -73,6 +79,20 @@ def export_model_from_workdir(workdir, export_dir, imgsize: int = None, non_dyna
     validate_onnx_model(onnx_file)
     files.append((onnx_file, 'model.onnx'))
 
+    for logfile in glob.glob(os.path.join(workdir, 'events.out.tfevents.*')):
+        logging.info(f'Tensorboard file {logfile!r} found.')
+        matching = _LOG_FILE_PATTERN.fullmatch(os.path.basename(logfile))
+        assert matching, f'Log file {logfile!r}\'s name not match with pattern {_LOG_FILE_PATTERN.pattern}.'
+
+        timestamp = matching.group('timestamp')
+        machine = matching.group('machine')
+        if logfile_anonymous:
+            machine = sha3(machine.encode(), n=224)
+        extra = matching.group('extra')
+
+        final_name = f'events.out.tfevents.{timestamp}.{machine}.{extra}'
+        files.append((logfile, final_name))
+
     return files
 
 
@@ -94,7 +114,15 @@ print_version = partial(_origin_print_version, 'onnx')
 def cli(workdir: str, imgsize: int, verbose: bool, name: Optional[str]):
     logging.try_init_root(logging.INFO)
     export_dir = os.path.join(workdir, 'export')
-    files = export_model_from_workdir(workdir, export_dir, imgsize, True, verbose, name)
+    files = export_model_from_workdir(
+        workdir=workdir,
+        export_dir=export_dir,
+        imgsize=imgsize,
+        non_dynamic=True,
+        verbose=verbose,
+        name=name,
+        logfile_anonymous=True,
+    )
 
     zip_file = os.path.join(export_dir, f'{name}.zip')
     logging.info(f'Packing all the above file to archive {zip_file!r}')
