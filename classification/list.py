@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import re
@@ -7,10 +8,14 @@ from typing import Tuple
 from urllib.parse import quote
 
 import click
+import numpy as np
 import pandas as pd
 import torch
 from ditk import logging
 from hbutils.string import plural_word
+from hbutils.system import TemporaryDirectory
+from hfutils.operate import upload_directory_as_directory
+from hfutils.utils import hf_fs_path
 from huggingface_hub import HfFileSystem, hf_hub_url, HfApi
 from huggingface_hub.constants import ENDPOINT
 from huggingface_hub.hf_api import RepoFile
@@ -18,7 +23,7 @@ from tqdm.auto import tqdm
 
 from classification.models import load_model_from_ckpt
 from classification.train import torch_model_profile
-from .utils import GLOBAL_CONTEXT_SETTINGS
+from .utils import GLOBAL_CONTEXT_SETTINGS, markdown_to_df
 from .utils import print_version as _origin_print_version
 
 print_version = partial(_origin_print_version, 'list')
@@ -133,7 +138,55 @@ def huggingface(repository: str, revision: str, columns: Tuple[str, ...], show_i
     df = pd.DataFrame(rows)
     df = df.sort_values(by=['created_at'], ascending=[False])
     del df['created_at']
-    print(df.to_markdown(index=False, numalign="center", stralign="center"))
+    df = df.replace(np.nan, 'N/A')
+
+    with TemporaryDirectory() as td:
+        with open(os.path.join(td, 'README.md'), 'w') as f:
+            if not hf_fs.exists(hf_fs_path(
+                    repo_id=repository,
+                    repo_type='model',
+                    filename='README.md',
+                    revision=revision,
+            )):
+                print(df.to_markdown(index=False, numalign="center", stralign="center"), file=f)
+
+            else:
+                table_printed = False
+                tb_lines = []
+                with io.StringIO(hf_fs.read_text(hf_fs_path(
+                        repo_id=repository,
+                        repo_type='model',
+                        filename='README.md',
+                        revision=revision,
+                )).rstrip() + os.linesep * 2) as ifx:
+                    for line in ifx:
+                        line = line.rstrip()
+                        if line.startswith('|') and not table_printed:
+                            tb_lines.append(line)
+                        else:
+                            if tb_lines:
+                                df_c = markdown_to_df(os.linesep.join(tb_lines))
+                                if 'Name' in df_c.columns and 'FLOPS' in df_c.columns and \
+                                        'Params' in df_c.columns and 'Labels' in df_c.columns:
+                                    print(df.to_markdown(index=False, numalign="center", stralign="center"), file=f)
+                                    table_printed = True
+                                    tb_lines.clear()
+                                else:
+                                    print(os.linesep.join(tb_lines), file=f)
+                            print(line, file=f)
+
+                if not table_printed:
+                    print(df.to_markdown(index=False, numalign="center", stralign="center"), file=f)
+
+        upload_directory_as_directory(
+            repo_id=repository,
+            repo_type='model',
+            revision=revision,
+            path_in_repo='.',
+            local_directory=td,
+            message=f'Sync README for {repository}',
+            hf_token=os.environ.get('HF_TOKEN'),
+        )
 
 
 if __name__ == '__main__':
