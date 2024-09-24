@@ -1,5 +1,3 @@
-import io
-
 import pandas as pd
 
 
@@ -12,10 +10,8 @@ def markdown_to_df(markdown_text: str) -> pd.DataFrame:
     data = [row.strip('|').split('|') for row in data]
     data = [[cell.strip() for cell in row] for row in data]
 
-    csv_string = io.StringIO()
-    csv_string.write(','.join(header) + '\n')
-    for row in data:
-        csv_string.write(','.join(row) + '\n')
-    csv_string.seek(0)
-    df = pd.read_csv(csv_string)
+    df = pd.DataFrame(
+        columns=header,
+        data=data
+    )
     return df
