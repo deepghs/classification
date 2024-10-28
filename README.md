@@ -227,7 +227,7 @@ if __name__ == '__main__':
         num_workers=8,
         eval_epoch=5,
         key_metric='accuracy',
-        loss='focal',  # use `sce` when the dataset is not guaranteed to be cleaned
+        cls_loss='focal',  # use `sce` when the dataset is not guaranteed to be cleaned
         seed=0,
         # drop_path_rate=0.4,  # use this when training on caformer
 
