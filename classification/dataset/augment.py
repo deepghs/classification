@@ -1,7 +1,8 @@
 import random
 from functools import wraps
-from typing import Tuple
+from typing import Tuple, Callable
 
+from PIL import Image
 from torch import nn
 from torchvision.transforms import RandomCrop
 
@@ -42,3 +43,15 @@ class RangeRandomCrop(nn.Module):
     def forward(self, img):
         crop = RandomCrop(self._get_random_size(), self.padding, self.pad_if_needed, self.fill, self.padding_mode)
         return crop(img)
+
+
+def _fn_min_center_crop(image: Image.Image) -> Image.Image:
+    size = min(image.width, image.height)
+    left = (image.width - size) // 2
+    top = (image.height - size) // 2
+    right, bottom = left + size, top + size
+    return image.crop((left, top, right, bottom))
+
+
+def min_center_crop() -> Callable[[Image.Image], Image]:
+    return _fn_min_center_crop
