@@ -53,5 +53,5 @@ def _fn_min_center_crop(image: Image.Image) -> Image.Image:
     return image.crop((left, top, right, bottom))
 
 
-def min_center_crop() -> Callable[[Image.Image], Image]:
+def min_center_crop() -> Callable[[Image.Image], Image.Image]:
     return _fn_min_center_crop
