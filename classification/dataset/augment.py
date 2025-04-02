@@ -37,11 +37,31 @@ class RangeRandomCrop(nn.Module):
 
         self.min_size, self.max_size = sizes
 
-    def _get_random_size(self):
-        return random.randint(self.min_size, self.max_size)
+    def _get_random_size(self, width, height):
+        if isinstance(self.min_size, int):
+            min_width = min_height = self.min_size
+        else:
+            min_width = int(width * self.min_size)
+            min_height = int(height * self.min_size)
+        if isinstance(self.max_size, int):
+            max_width = max_height = self.max_size
+        else:
+            max_width = int(width * self.max_size)
+            max_height = int(height * self.max_size)
+        return random.randint(min_height, max_height), random.randint(min_width, max_width)
 
     def forward(self, img):
-        crop = RandomCrop(self._get_random_size(), self.padding, self.pad_if_needed, self.fill, self.padding_mode)
+        if isinstance(img, Image.Image):
+            width, height = img.width, img.height
+        else:
+            height, width = img.shape[-2:]
+        crop = RandomCrop(
+            self._get_random_size(width, height),
+            padding=self.padding,
+            pad_if_needed=self.pad_if_needed,
+            fill=self.fill,
+            padding_mode=self.padding_mode
+        )
         return crop(img)
 
 

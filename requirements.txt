@@ -1,5 +1,5 @@
 hbutils>=0.9.1
-torch<2
+torch>=2.4
 torchvision
 matplotlib
 pillow
