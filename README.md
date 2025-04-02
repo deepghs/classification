@@ -102,6 +102,7 @@ if __name__ == '__main__':
         # datasets
         train_dataset=train_dataset,
         test_dataset=test_dataset,
+        preprocessor=TRANSFORM_TEST,
 
         # train settings, pretrained model will be used
         max_epochs=100,
@@ -221,6 +222,7 @@ if __name__ == '__main__':
         # datasets
         train_dataset=train_dataset,
         test_dataset=test_dataset,
+        preprocessor=TRANSFORM_TEST,
 
         # train settings, pretrained model will be used
         max_epochs=500,

@@ -51,6 +51,14 @@ def export_model_from_workdir(workdir, export_dir, imgsize: int = None, non_dyna
     os.makedirs(export_dir, exist_ok=True)
     files = []
 
+    if os.path.exists(os.path.join(workdir, 'preprocess.json')):
+        preprocess_file = os.path.join(export_dir, 'preprocess.json')
+        logging.info(f'Adding preprocess file to {preprocess_file!r} ...')
+        shutil.copyfile(
+            os.path.join(workdir, 'preprocess.json'),
+            preprocess_file
+        )
+
     ckpt_file = os.path.join(export_dir, f'{name}.ckpt')
     logging.info(f'Copying checkpoint to {ckpt_file!r}')
     shutil.copyfile(model_filename, ckpt_file)

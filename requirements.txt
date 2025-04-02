@@ -12,7 +12,7 @@ pandas
 timm>=0.9.0
 thop
 typing_extensions; python_version < '3.8'
-dghs-imgutils>=0.1.0
+dghs-imgutils>=0.14.0
 tensorboard
 accelerate
 DI-toolkit

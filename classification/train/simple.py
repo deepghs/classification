@@ -1,3 +1,4 @@
+import json
 import os
 import warnings
 from typing import Optional, List
@@ -15,7 +16,7 @@ from sklearn.metrics import accuracy_score
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
-
+from imgutils.preprocess import parse_torchvision_transforms
 from .base import register_task_type, DEFAULT_TASK, put_meta_at_workdir
 from .metrics import cls_map_score, cls_auc_score
 from .profile import torch_model_profile
@@ -48,7 +49,7 @@ def train_simple(
         weight_decay: float = 1e-3, num_workers: Optional[int] = 8, eval_epoch: int = 5,
         key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy', loss='focal',
         loss_weight=None, seed: Optional[int] = 0, loss_args: Optional[dict] = None,
-        img_size: int = 384, **model_args):
+        img_size: int = 384, preprocessor=None, **model_args):
     if seed is not None:
         # native random, numpy, torch and faker's seeds are includes
         # if you need to register more library for seeding, see:
@@ -106,6 +107,13 @@ def train_simple(
     model, optimizer, train_dataloader, test_dataloader, scheduler, loss_fn = \
         accelerator.prepare(model, optimizer, train_dataloader, test_dataloader, scheduler, loss_fn)
     cm_size = max(6.0, len(labels) * 0.9)
+
+    if preprocessor is not None:
+        logging.info('Saving the preprocessor ...')
+        with open(os.path.join(workdir, 'preprocess.json'), 'w') as f:
+            json.dump({
+                'stages': parse_torchvision_transforms(preprocessor)
+            }, f, indent=4, sort_keys=True, ensure_ascii=False)
 
     logging.info(f'Model\'s arguments: {model.__arguments__!r}, info: {model.__info__!r}.')
     session = TrainSession(workdir, key_metric=key_metric)

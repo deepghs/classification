@@ -1,8 +1,9 @@
+import json
 import os
 import warnings
 from typing import Optional, List
 
-import numpy as np
+from imgutils.preprocess import parse_torchvision_transforms
 from torch import nn
 
 try:
@@ -52,7 +53,7 @@ def train_distillation(
         temperature: float = 7.0, alpha=0.3,
         key_metric: Literal['accuracy', 'AUC', 'mAP'] = 'accuracy', cls_loss='focal',
         loss_weight=None, seed: Optional[int] = 0, loss_args: Optional[dict] = None,
-        img_size: int = 384, **model_args):
+        img_size: int = 384, preprocessor=None, **model_args):
     if seed is not None:
         # native random, numpy, torch and faker's seeds are includes
         # if you need to register more library for seeding, see:
@@ -131,6 +132,13 @@ def train_distillation(
             optimizer, train_dataloader, test_dataloader, scheduler
         )
     cm_size = max(6.0, len(labels) * 0.9)
+
+    if preprocessor is not None:
+        logging.info('Saving the preprocessor ...')
+        with open(os.path.join(workdir, 'preprocess.json'), 'w') as f:
+            json.dump({
+                'stages': parse_torchvision_transforms(preprocessor)
+            }, f, indent=4, sort_keys=True, ensure_ascii=False)
 
     session = TrainSession(workdir, key_metric=key_metric)
     logging.info('Training start!')
