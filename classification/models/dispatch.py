@@ -22,7 +22,7 @@ def save_model_to_ckpt(model, file):
 
 
 def load_model_from_ckpt(file):
-    data = torch.load(file, map_location='cpu')
+    data = torch.load(file, map_location='cpu', weights_only=False)
     arguments = data['arguments'].copy()
     name = arguments.pop('name')
     labels = arguments.pop('labels')
